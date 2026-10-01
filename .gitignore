@@ -1,0 +1,21 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+
+# local data and tracking (canonical copies live in the object store)
+data/
+mlruns/
+mlflow.db
+optuna.db
+.DS_Store

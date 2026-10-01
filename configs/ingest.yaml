@@ -1,0 +1,72 @@
+# Ingestion settings (spec section 5). Secrets come from the environment, never from here.
+
+open_meteo:
+  # Pinned model. `best_match` and `*_seamless` silently switch models over time, which breaks
+  # reproducibility; `ecmwf_ifs` has a continuous historical-forecast series since before 2021
+  # and true-lead Previous Runs since 2025-10-01. See docs/decisions.md.
+  model: ecmwf_ifs
+  variables:
+    - temperature_2m
+    - wind_speed_10m
+    - wind_speed_100m
+    - wind_direction_100m
+    - cloud_cover
+    - shortwave_radiation
+    - precipitation
+    - snowfall
+  wind_speed_unit: ms
+  min_interval_s: 1.0     # between requests (free tier: 600/min, 5000/hour, 10000/day)
+  max_retries: 5
+  timeout_s: 120
+  endpoints:
+    historical_forecast:  # stitched first hours of successive runs; training history
+      url: https://historical-forecast-api.open-meteo.com/v1/forecast
+      start: "2021-01-01"
+    previous_runs:        # fixed lead times; honest backtesting
+      url: https://previous-runs-api.open-meteo.com/v1/forecast
+      start: "2025-10-02" # first full day with both day-1 and day-2 leads for ecmwf_ifs
+      lead_days: [1, 2]
+      # The archive has whole-day holes (e.g. 2026-03-26..2026-05-06, different per variable and
+      # lead). Tolerated here and reported as null_counts; handled explicitly in dataset build.
+      max_null_frac: 0.10
+    forecast:             # live forecasting; archived as issued
+      url: https://api.open-meteo.com/v1/forecast
+      forecast_days: 3
+      max_null_frac: 0.05   # the live tail can be shorter than requested
+
+prices:
+  # Target series source (pluggable). ENTSO-E is the intended source of record once a token
+  # exists; until then elprisetjustnu.se, cross-checked against ENTSO-E later.
+  source: elprisetjustnu
+
+elprisetjustnu:
+  # One static JSON file per local (Europe/Stockholm) day and zone. No key. Prices exclude VAT
+  # and taxes. Credit elprisetjustnu.se when prices are used publicly.
+  url_template: "https://www.elprisetjustnu.se/api/v1/prices/{year}/{month_day}_{zone}.json"
+  start: "2021-11-01"     # first available day for SE1-SE4 (probed 2026-09-30)
+  min_interval_s: 0.5
+  max_retries: 5
+  timeout_s: 30
+  # The default Python user agent is rejected with HTTP 403.
+  user_agent: "pricefc/0.1 (day-ahead price forecasting research)"
+
+entsoe:
+  min_interval_s: 0.5     # reported limit is 400 requests/minute
+  max_retries: 3
+  chunk_days: 365         # reported per-request range limit is one year
+  history_start: "2021-01-01"
+  # Datasets pulled per configured zone. `per_neighbour` datasets are pulled for every
+  # neighbouring bidding zone (entsoe-py NEIGHBOURS mapping), in both directions.
+  datasets:
+    - day_ahead_prices
+    - load_forecast
+    - wind_solar_forecast
+    - generation
+    - crossborder_flows
+    - scheduled_exchanges
+    - generation_unavailability
+    - hydro_reservoirs
+  # Neighbour price areas pulled as extra `day_ahead_prices` series (lagged features only).
+  neighbour_price_areas: [SE1, SE2, SE3, SE4, NO1, NO3, NO4, FI, DK1, DK2, DE_LU, PL, LT]
+  # [VERIFY] ENTSO-E publishes hydro reservoir filling per country, not per bidding zone.
+  hydro_reservoir_area: SE

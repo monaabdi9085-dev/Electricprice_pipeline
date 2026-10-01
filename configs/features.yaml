@@ -1,0 +1,26 @@
+# Feature configuration. Weather points per zone (spec section 5.2): demand centres,
+# wind-rich areas, and for SE4 neighbouring wind (southern Denmark, northern Germany).
+# Starting set; finalise from feature-importance results.
+weather:
+  locations:
+    SE1:
+      - {name: se1_lulea, lat: 65.58, lon: 22.15, role: demand}
+      - {name: se1_kiruna, lat: 67.86, lon: 20.23, role: demand}
+      - {name: se1_markbygden, lat: 65.45, lon: 20.90, role: wind}
+    SE2:
+      - {name: se2_sundsvall, lat: 62.39, lon: 17.31, role: demand}
+      - {name: se2_umea, lat: 63.83, lon: 20.26, role: demand}
+      - {name: se2_ostersund, lat: 63.18, lon: 14.64, role: wind}
+      - {name: se2_hudiksvall, lat: 61.73, lon: 17.10, role: wind}
+    SE3:
+      - {name: se3_stockholm, lat: 59.33, lon: 18.07, role: demand}
+      - {name: se3_gothenburg, lat: 57.71, lon: 11.97, role: demand}
+      - {name: se3_orebro, lat: 59.27, lon: 15.21, role: demand}
+      - {name: se3_gavle, lat: 60.67, lon: 17.14, role: wind}
+      - {name: se3_vanern, lat: 58.90, lon: 13.30, role: wind}
+    SE4:
+      - {name: se4_malmo, lat: 55.60, lon: 13.00, role: demand}
+      - {name: se4_karlshamn, lat: 56.17, lon: 14.86, role: wind}
+      - {name: se4_kriegers_flak, lat: 55.05, lon: 12.95, role: neighbour_wind}
+      - {name: dk_lolland, lat: 54.80, lon: 11.40, role: neighbour_wind}
+      - {name: de_husum, lat: 54.48, lon: 9.05, role: neighbour_wind}
