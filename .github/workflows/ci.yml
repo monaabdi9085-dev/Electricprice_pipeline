@@ -11,7 +11,7 @@ jobs:
     env:
       HYPOTHESIS_PROFILE: ci
     steps:
-      - uses: actions/checkout@v4
+        - uses: actions/checkout@v4   
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --frozen
       - run: uv run ruff check src tests
@@ -32,16 +32,9 @@ jobs:
     steps:
       - name: Create artifact file
         run: echo "Test passed" > artifact.txt
-        
+
       - name: Upload artifact 
         uses: actions/upload-artifact@v4 
         with:
           name: test-artifact
-          path: artifact.txt 
-        
-
-
-
-
-
-     
+          path: artifact.txt
